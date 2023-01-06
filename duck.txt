@@ -1,0 +1,129 @@
+package winter_0104_08;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Random;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+public class RaceDuckFrame extends JFrame {
+	JLabel[] ans = new JLabel[4];
+	DuckThread[] hts = new DuckThread[ans.length];
+	int[] winnerIndex = new int[ans.length];
+	int index;
+	String[] comboStr = {"1번: 슈야", "2번: 콩이", "3번: 잉크 고양이", "4번: 오리"};
+	JComboBox<String> combo = new JComboBox<String>(comboStr);
+	int betingIndex;
+	
+	public RaceDuckFrame() {
+		JPanel pan = new JPanel(null);
+		ImageIcon icon = null;
+		JLabel lineLbl = new JLabel(new ImageIcon("images/line.png"));
+		lineLbl.setBounds(900, 70, 5, 420);
+		JLabel flagLbl = new JLabel(new ImageIcon("images/flag.png"));
+		flagLbl.setBounds(900, 40, 20, 27);
+		pan.add(lineLbl);
+		pan.add(flagLbl);
+		
+		JPanel panN = new JPanel();
+		JButton btnBeting = new JButton("게임배팅");
+		JButton btnStart = new JButton("게임시작");
+		btnBeting.addActionListener(btnL);
+		btnStart.addActionListener(btnL);
+		panN.add(combo);
+		panN.add(btnBeting);
+		panN.add(btnStart);
+		
+		for(int i = 0; i<ans.length; i++) {
+			icon = new ImageIcon("images/an"+(i+1)+".gif");
+			ans[i] = new JLabel(icon);
+			ans[i].setLocation(0,50 + i*120); 
+			ans[i].setSize(150, 100);
+			pan.add(ans[i]);
+		}
+		
+		add(pan, "Center");
+		add(panN, "North");
+		setTitle("경주 게임");
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setBounds(500, 200, 1000 ,600);
+		setVisible(true);
+		setResizable(false);
+		pan.setBackground(Color.white);
+		
+	}
+	
+	public static void main(String[] args) {
+		new RaceDuckFrame();
+	}
+	
+	ActionListener btnL = new ActionListener() {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			switch (e.getActionCommand()) {
+			case "게임배팅":
+				betingIndex = combo.getSelectedIndex();
+				break;
+			case "게임시작":
+				for (int i = 0; i < ans.length; i++) {
+					DuckThread t = new DuckThread(ans[i],"stop_one"+(i+1), i);
+					t.start();
+				}
+				break;
+			}
+			
+		}
+	};
+	
+	public class DuckThread extends Thread{
+		JLabel lblDuck;
+		String stopImageName;
+		int randomValue;
+		int duckIndex;
+		
+		public DuckThread(JLabel lblDuck, String stopImageName, int duckIndex) {
+			this.lblDuck = lblDuck;
+			this.stopImageName = stopImageName;
+			this.duckIndex = duckIndex;
+		}
+		
+		@Override
+		public void run() {
+			while (true) {
+				lblDuck.setLocation(lblDuck.getX()+5, lblDuck.getY());
+				if(lblDuck.getX()==820) {
+					lblDuck.setIcon(new ImageIcon("images/"+stopImageName+".gif"));
+					winnerIndex[index++] = duckIndex;
+					if(index  == ans.length-1)
+						JOptionPane.showMessageDialog(RaceDuckFrame.this, (winnerIndex[0]+1)+"번이 우승!!!");
+					if(winnerIndex[0]==betingIndex)
+						JOptionPane.showMessageDialog(RaceDuckFrame.this, "축하합니다. 배팅에 성공하였습니다.");
+					else
+						JOptionPane.showMessageDialog(RaceDuckFrame.this, "다음에 다시 배팅 부탁드려요~. 배팅에 실패하였습니다.");
+					index = 0;
+					for (int i = 0; i < ans.length; i++) {
+						ans[i].setLocation(0, ans[i].getY());
+						ans[i].setIcon(new ImageIcon("images/an"+(i+1)+".gif"));
+					}
+					
+				}
+				break;
+			}
+			try {
+				Random random = new Random();
+				randomValue = random.nextInt(10);
+				sleep(10 * randomValue);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}			
+	}
+}
